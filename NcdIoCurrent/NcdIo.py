@@ -1,3 +1,7 @@
+"""
+Identify and read current from devices: https://store.ncd.io/
+Inspiration from: https://github.com/ControlEverythingCommunity/PECMAC
+"""
 import os
 import sys
 import time
