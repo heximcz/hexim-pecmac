@@ -30,8 +30,10 @@ class NcdIo:
         # 0x6A(106), 0x02(2), 0x00(0),0x00(0), 0x00(0) 0x00(0), 0xFE(254)
         # Header byte-2, command-2, byte 3, 4, 5 and 6 are reserved, checksum
         cmd = [106, 2, 0, 0, 0, 0, 254]
-
-        self._bus.write_i2c_block_data(self._address, 146, cmd)
+        try:
+            self._bus.write_i2c_block_data(self._address, 146, cmd)
+        except OSError:
+            raise OSError
         time.sleep(0.5)
 
         # PECMAC125A address, 0x2A(42)
