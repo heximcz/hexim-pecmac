@@ -66,11 +66,16 @@ class NcdIo:
             print("Current Value : %.3f A" % current)
             print("Watt Value : %.3f W" % (current * self._volts))
 
-    def get_one_current(self, number):
-        """ get one current in single value first channel is 0 """
-        if number <= self.channels:
+    def get_one_current(self, channel):
+        """ get one current value, first channel is 0 """
+        if channel <= self.channels:
             data = self.read_current()
-            return self.__compute_current(number, data)
+            return self.__compute_current(channel, data)
+
+    def get_one_watt(self, channel):
+        """ get one watt value, first channel is 0 """
+        current = self.get_one_current(channel)
+        return current * self._volts
 
     def read_calibration_values(self):
         # Command for reading calibration values
@@ -82,8 +87,8 @@ class NcdIo:
         self.__write_block(self._address, register, cmd)
         time.sleep(0.5)
 
-        # Read data back from 0x55(85), No. of Channels * 3 bytes
-        # current MSB1, current MSB, current LSB
+        # Read data back from 0x55(85), No. of Channels * 2 bytes
+        # current MSB, current LSB
         return self.__read_block(self._address, 85, self.channels * 2)
 
     def print_calibration(self):
