@@ -16,11 +16,13 @@ class NcdIo:
     :type address: int
     """
 
-    def __init__(self, address):
+    def __init__(self, address, volts):
         # create SMBus
         self._bus = SMBus(1)
         # i2c address (int)
         self._address = address
+        # volts (EU: 230)
+        self._volts = volts
         # get board parameters
         self._ident_sensors()
 
@@ -68,9 +70,10 @@ class NcdIo:
             # Output data to screen
             print("Channel no : %d " % (i + 1))
             print("Current Value : %.3f A" % current)
+            print("Watt Value : %.3f W" % current * self._volts)
 
     def get_one_current(self, number):
-        """ get one current in single value """
+        """ get one current in single value first channel is 0 """
         if number <= self.channels:
             data = self.read_current()
             return self.__compute_current(number, data)
