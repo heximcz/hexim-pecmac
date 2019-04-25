@@ -185,13 +185,16 @@ class LCD1602:
             time.sleep(self.sleep_time)
 
     def load_messages(self):
-        data = self.ncdio.read_current()
-        for i in range(0, self.ncdio.channels):
-            # Convert the data to ampere
-            current = self.ncdio.compute_current(i, data)
-            # Output data to screen
-            self.message[i] = "F{i}: {current:.2f}A\n    {watts:.2f}W" \
-                .format(i=i+1, current=current, watts=current*self.ncdio.volts)
+        try:
+            data = self.ncdio.read_current()
+            for i in range(0, self.ncdio.channels):
+                # Convert the data to ampere
+                current = self.ncdio.compute_current(i, data)
+                # Output data to screen
+                self.message[i] = "F{i}: {current:.2f}A\n    {watts:.2f}W" \
+                    .format(i=i+1, current=current, watts=current*self.ncdio.volts)
+        except Warning:
+            pass
 
     def run(self):
         # Create threads
