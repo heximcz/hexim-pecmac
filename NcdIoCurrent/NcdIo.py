@@ -25,10 +25,10 @@ class NcdIo:
     channels = 0
     # firmware revision
     firmware = 0
+    # single phase volts
+    volts = 0
     # i2c address
     _address = 0
-    # single phase volts
-    _volts = 0
 
     def __init__(self, address, volts):
         # create SMBus
@@ -36,7 +36,7 @@ class NcdIo:
         # i2c address (int)
         self._address = address
         # volts (EU: 230)
-        self._volts = volts
+        self.volts = volts
         # get board parameters
         self._ident_sensors()
 
@@ -59,23 +59,23 @@ class NcdIo:
         data = self.read_current()
         for i in range(0, self.channels):
             # Convert the data to ampere
-            current = self.__compute_current(i, data)
+            current = self.compute_current(i, data)
 
             # Output data to screen
             print("Channel no : %d " % (i + 1))
             print("Current Value : %.3f A" % current)
-            print("Watt Value : %.3f W" % (current * self._volts))
+            print("Watt Value : %.1f W" % (current * self.volts))
 
     def get_one_current(self, channel):
         """ get one current value, first channel is 0 """
         if channel <= self.channels:
             data = self.read_current()
-            return self.__compute_current(channel, data)
+            return self.compute_current(channel, data)
 
     def get_one_watt(self, channel):
         """ get one watt value, first channel is 0 """
         current = self.get_one_current(channel)
-        return current * self._volts
+        return current * self.volts
 
     def read_calibration_values(self):
         # Command for reading calibration values
@@ -142,7 +142,7 @@ class NcdIo:
             sys.exit(os.EX_OSERR)
 
     @staticmethod
-    def __compute_current(idx, data):
+    def compute_current(idx, data):
         msb1 = data[idx * 3]
         msb = data[1 + idx * 3]
         lsb = data[2 + idx * 3]
