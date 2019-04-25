@@ -138,9 +138,9 @@ class LCD1602:
                 if not self.blight:
                     self.back_light()
                 with self.lock:
+                    self.load_messages()
                     self.lcd.clear()
                     self.msg_index(self.message_idx + 1)
-                    self.load_messages()
                     self.lcd.message = self.message[self.message_idx]
                     time.sleep(.5)
 
@@ -150,17 +150,17 @@ class LCD1602:
                 if not self.blight:
                     self.back_light()
                 with self.lock:
+                    self.load_messages()
                     self.lcd.clear()
                     self.msg_index(self.message_idx - 1)
-                    self.load_messages()
                     self.lcd.message = self.message[self.message_idx]
                     time.sleep(.5)
             time.sleep(self.sleep_time)
 
     def messages(self):
         while True:
-            self.load_messages()
             if self.autoplay:
+                self.load_messages()
                 while self.message_idx < self.message_sum:
                     if not self.autoplay:
                         break
