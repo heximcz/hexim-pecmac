@@ -185,7 +185,7 @@ class LCD1602:
         """ load actual data """
         while True:
             self.load_messages()
-            time.sleep(2)
+            time.sleep(self.sleep_time)
 
     def load_messages(self):
         data = self.ncdio.read_current()
@@ -193,18 +193,17 @@ class LCD1602:
             # Convert the data to ampere
             current = self.ncdio.compute_current(i, data)
             # Output data to screen
-            self.message[i] = "F{i}: {current}A\n    {watts}W" \
+            self.message[i] = "F{i}: {current:.2f}A\n    {watts:.2f}W" \
                 .format(i=i+1, current=current, watts=current*self.ncdio.volts)
 
-
     def run(self):
-        # Create two threads as follows
+        # Create threads
         t_msgr = threading.Thread(name='messages', target=self.messages)
         t_button = threading.Thread(name='buttons', target=self.buttons)
         t_back_light = threading.Thread(name='back_light_control', target=self.back_light_control)
         t_messages = threading.Thread(name='reload_messages', target=self.refresh_messages())
 
-        t_messages.start()
         t_msgr.start()
         t_button.start()
         t_back_light.start()
+        t_messages.start()
