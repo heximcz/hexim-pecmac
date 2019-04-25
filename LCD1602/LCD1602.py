@@ -140,6 +140,7 @@ class LCD1602:
                 with self.lock:
                     self.lcd.clear()
                     self.msg_index(self.message_idx + 1)
+                    self.load_messages()
                     self.lcd.message = self.message[self.message_idx]
                     time.sleep(.5)
 
@@ -151,12 +152,14 @@ class LCD1602:
                 with self.lock:
                     self.lcd.clear()
                     self.msg_index(self.message_idx - 1)
+                    self.load_messages()
                     self.lcd.message = self.message[self.message_idx]
                     time.sleep(.5)
             time.sleep(self.sleep_time)
 
     def messages(self):
         while True:
+            self.load_messages()
             if self.autoplay:
                 while self.message_idx < self.message_sum:
                     if not self.autoplay:
@@ -181,12 +184,6 @@ class LCD1602:
                     self.back_light()
             time.sleep(self.sleep_time)
 
-    def refresh_messages(self):
-        """ load actual data """
-        while True:
-            self.load_messages()
-            time.sleep(self.sleep_time)
-
     def load_messages(self):
         data = self.ncdio.read_current()
         for i in range(0, self.ncdio.channels):
@@ -201,9 +198,7 @@ class LCD1602:
         t_msgr = threading.Thread(name='messages', target=self.messages)
         t_button = threading.Thread(name='buttons', target=self.buttons)
         t_back_light = threading.Thread(name='back_light_control', target=self.back_light_control)
-        t_messages = threading.Thread(name='reload_messages', target=self.refresh_messages())
 
         t_msgr.start()
         t_button.start()
         t_back_light.start()
-        t_messages.start()
