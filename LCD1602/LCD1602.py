@@ -23,7 +23,7 @@ class LCD1602:
     def __init__(self, ncdio):
 
         # Current Values Board from NCD.io
-        if not isinstance(NcdIo, ncdio):
+        if not isinstance(ncdio, NcdIo):
             raise AssertionError
         self.ncdio = ncdio
 
@@ -46,8 +46,11 @@ class LCD1602:
         # messages
         self.message = dict()
 
+        # load actual data from sensors
+        self.load_messages()
+
         # Message counter
-        self.message_sum = 3
+        self.message_sum = len(self.message)
         # Message actual index
         self.message_idx = 0
         # autoplay (boolean)
@@ -83,9 +86,6 @@ class LCD1602:
         self.button_down = digitalio.DigitalInOut(board.D10)
         self.button_down.direction = digitalio.Direction.INPUT
         self.button_down.pull = digitalio.Pull.UP
-
-        # load actual data from sensors
-        self.refresh_messages()
 
         self.lock = threading.Lock()
 
@@ -184,14 +184,18 @@ class LCD1602:
     def refresh_messages(self):
         """ load actual data """
         while True:
-            data = self.ncdio.read_current()
-            for i in range(0, self.ncdio.channels):
-                # Convert the data to ampere
-                current = self.ncdio.compute_current(i, data)
-                # Output data to screen
-                self.message[i] = "F{i}: {current}A\n    {watts}W"\
-                    .format(i=i+1, current=current, watts=current*self.ncdio.volts)
+            self.load_messages()
             time.sleep(2)
+
+    def load_messages(self):
+        data = self.ncdio.read_current()
+        for i in range(0, self.ncdio.channels):
+            # Convert the data to ampere
+            current = self.ncdio.compute_current(i, data)
+            # Output data to screen
+            self.message[i] = "F{i}: {current}A\n    {watts}W" \
+                .format(i=i+1, current=current, watts=current*self.ncdio.volts)
+
 
     def run(self):
         # Create two threads as follows
