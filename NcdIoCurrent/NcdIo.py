@@ -97,7 +97,7 @@ class NcdIo:
 
             # Output data to screen
             print("Channel no : %d " % (i + 1))
-            print("Calibration Value : %.3f A" % calibration)
+            print("Calibration Value : %d" % calibration)
 
     def board_info(self):
         print("Type of Sensor : %d" % self.board)
