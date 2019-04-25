@@ -14,4 +14,9 @@ dev = NcdIo(i2c_address, volts)
 # dev.get_one_watt(0)
 
 lcd = LCD1602(dev)
+# lcd.run() is multithreading process, be carefully
 lcd.run()
+
+"""
+for share data with zabbix, write data to the ramdisk
+"""

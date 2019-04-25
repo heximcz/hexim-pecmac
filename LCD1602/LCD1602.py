@@ -16,7 +16,7 @@ import digitalio
 import threading
 import adafruit_character_lcd.character_lcd as characterlcd
 from NcdIoCurrent import NcdIo
-
+from ZabbixFile import ZabbixFile
 
 class LCD1602:
 
@@ -186,6 +186,8 @@ class LCD1602:
 
     def load_messages(self):
         data = self.ncdio.read_current()
+        zabbix = ZabbixFile()
+        zabbix.write(data)
         for i in range(0, self.ncdio.channels):
             # Convert the data to ampere
             current = self.ncdio.compute_current(i, data)
