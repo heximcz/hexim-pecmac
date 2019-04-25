@@ -35,8 +35,12 @@ class NcdIo:
         # Command for reading device identification data
         # 0x6A(106), 0x02(2), 0x00(0),0x00(0), 0x00(0) 0x00(0), 0xFE(254)
         # Header byte-2, command-2, byte 3, 4, 5 and 6 are reserved, checksum
-        cmd = [106, 2, 0, 0, 0, 0, 254]
-        self.__write_block(self._address, 146, cmd)
+        cmd = [106, 2, 0, 0, 0, 0]
+        cmd = [106, 1, 1, self.channels, 0, 0]
+        register = 146
+        checksum = self.__checksum(register, cmd)
+        # TODO
+        self.__write_block(self._address, register, cmd)
         time.sleep(0.5)
 
         # PECMAC125A address, 0x2A(42)
@@ -49,7 +53,9 @@ class NcdIo:
         # Command for reading current
         # 0x6A(106), 0x01(1), 0x01(1),0x0C(12), 0x00(0), 0x00(0) 0x0A(10)
         # Header byte-2, command-1, start channel-1, stop channel-12, byte 5 and 6 reserved, checksum
-        cmd = [106, 1, 1, 12, 0, 0, 10]
+        cmd = [106, 1, 1, self.channels, 0, 0]
+        checksum = self.__checksum(register, cmd)
+        # TODO
         self.__write_block(self._address, 146, cmd)
         time.sleep(0.5)
 
@@ -100,3 +106,12 @@ class NcdIo:
         except OSError as e:
             print("Write block error: %s" % e)
             sys.exit(os.EX_OSERR)
+
+    @staticmethod
+    def __checksum(register, cmd):
+        a = sum(register, cmd)
+        print(a)
+        sys.exit()
+        # sum
+        # if sum > 255
+        # return sum & 0xFF
