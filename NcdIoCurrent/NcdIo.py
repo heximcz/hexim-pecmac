@@ -44,52 +44,37 @@ class NcdIo:
         #
 
     def read_current(self):
-        """ Read all current.
-            For use function in multithreading
-            is protected for parallel call
-            TODO: better is test checksum from read data ?
-        """
-        if not self._lock:
-            self._lock = True
-            # Command for reading current
-            # 0x6A(106), 0x01(1), 0x01(1),0x0C(12), 0x00(0), 0x00(0) 0x0A(10)
-            # Header byte-2, command-1, start channel-1, stop channel-12, byte 5 and 6 reserved, checksum
-            cmd = [106, 1, 1, self.channels, 0, 0]
-            register = 146
-            cmd.append(self.__checksum(register, cmd))
-            self.__write_block(self._address, register, cmd)
-            time.sleep(0.5)
+        """ Read all current. """
+        # Command for reading current
+        # 0x6A(106), 0x01(1), 0x01(1),0x0C(12), 0x00(0), 0x00(0) 0x0A(10)
+        # Header byte-2, command-1, start channel-1, stop channel-12, byte 5 and 6 reserved, checksum
+        cmd = [106, 1, 1, self.channels, 0, 0]
+        register = 146
+        cmd.append(self.__checksum(register, cmd))
+        self.__write_block(self._address, register, cmd)
+        time.sleep(0.5)
 
-            # Read data back from 0x55(85), No. of Channels * 3 bytes
-            # current MSB1, current MSB, current LSB
-            data = self.__read_block(self._address, 85, self.channels * 3)
-            self._lock = False
-            return data
-        raise Warning
+        # Read data back from 0x55(85), No. of Channels * 3 bytes
+        # current MSB1, current MSB, current LSB
+        return self.__read_block(self._address, 85, self.channels * 3)
 
     def print_currents(self):
         """ print readable data for all sensors """
-        try:
-            data = self.read_current()
-            for i in range(0, self.channels):
-                # Convert the data to ampere
-                current = self.compute_current(i, data)
+        data = self.read_current()
+        for i in range(0, self.channels):
+            # Convert the data to ampere
+            current = self.compute_current(i, data)
 
-                # Output data to screen
-                print("Channel no : %d " % (i + 1))
-                print("Current Value : %.3f A" % current)
-                print("Watt Value : %.1f W" % (current * self.volts))
-        except Warning:
-            print('busy')
+            # Output data to screen
+            print("Channel no : %d " % (i + 1))
+            print("Current Value : %.3f A" % current)
+            print("Watt Value : %.1f W" % (current * self.volts))
 
     def get_one_current(self, channel):
         """ get one current value, first channel is 0 """
         if channel <= self.channels:
-            try:
-                data = self.read_current()
-                return self.compute_current(channel, data)
-            except Warning:
-                return 'busy'
+            data = self.read_current()
+            return self.compute_current(channel, data)
 
     def get_one_watt(self, channel):
         """ get one watt value, first channel is 0 """
