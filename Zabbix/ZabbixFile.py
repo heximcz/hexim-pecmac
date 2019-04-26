@@ -20,7 +20,7 @@ class ZabbixFile:
         try:
             with open(self.file_path, 'r') as stream:
                 try:
-                    return yaml.load(stream)
+                    return yaml.load(stream, Loader=yaml.SafeLoader)
                 except yaml.YAMLError:
                     return False
         except IOError:

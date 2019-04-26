@@ -186,16 +186,14 @@ class LCD1602:
 
     def load_messages(self):
         data = self.ncdio.read_current()
-        zabbix_data = {"data": []}
+        zabbix_data = {}
         for i in range(0, self.ncdio.channels):
             # Convert the data to ampere
             current = self.ncdio.compute_current(i, data)
-            zabbix_data["data"].append({
-                "F" + str(i): {
-                    "ampere": "{current:.2f}".format(current=current),
-                    "watt": "{watts:.2f}".format(watts=(current*self.ncdio.volts))
-                }
-            })
+            zabbix_data["F" + str(i+1)] = {
+                "ampere": "{current:.2f}".format(current=current),
+                "watt": "{watts:.2f}".format(watts=(current*self.ncdio.volts))
+            }
             # Output data to screen
             self.message[i] = "F{i}: {current:.2f}A\n    {watts:.2f}W".format(
                 i=i+1, current=current, watts=current*self.ncdio.volts
