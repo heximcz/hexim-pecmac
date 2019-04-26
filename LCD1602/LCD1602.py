@@ -18,6 +18,7 @@ import adafruit_character_lcd.character_lcd as characterlcd
 from NcdIoCurrent import NcdIo
 from Zabbix import ZabbixFile
 
+
 class LCD1602:
 
     def __init__(self, ncdio):
@@ -44,7 +45,7 @@ class LCD1602:
         self.while_counter = 0
 
         # messages
-        self.message = dict()
+        self.message = {}
 
         # load actual data from sensors
         self.load_messages()
@@ -65,12 +66,12 @@ class LCD1602:
         self.lcd_d7 = digitalio.DigitalInOut(board.D22)
         self.lcd_back_light = digitalio.DigitalInOut(board.D25)
 
-        # Turn back_light off
-        self.lcd.back_light = self.blight
-
         # Init the lcd class
         self.lcd = characterlcd.Character_LCD_Mono(self.lcd_rs, self.lcd_en, self.lcd_d4, self.lcd_d5, self.lcd_d6,
                                                    self.lcd_d7, self.lcd_columns, self.lcd_rows, self.lcd_back_light)
+
+        # Turn back_light off
+        self.lcd.back_light = self.blight
 
         # Select button
         self.button_select = digitalio.DigitalInOut(board.D11)
@@ -119,6 +120,40 @@ class LCD1602:
         self.autoplay = state
         return
 
+    def load_messages(self):
+        data = self.ncdio.read_current()
+        zabbix_data = {}
+        for i in range(0, self.ncdio.channels):
+            # Convert the data to ampere
+            current = self.ncdio.compute_current(i, data)
+            zabbix_data["F" + str(i+1)] = {
+                "ampere": "{current:.2f}".format(current=current),
+                "watt": "{watts:.2f}".format(watts=(current*self.ncdio.volts))
+            }
+            # Output data to screen
+            self.message[i] = "F{i}: {current:.2f}A\n    {watts:.2f}W".format(
+                i=i+1, current=current, watts=current*self.ncdio.volts
+            )
+        zabbix = ZabbixFile()
+        zabbix.write(zabbix_data)
+
+    def messages(self):
+        while True:
+            if self.autoplay:
+                while self.message_idx < self.message_sum:
+                    if not self.autoplay:
+                        break
+                    with self.lock:
+                        self.msg_index(self.message_idx)
+                        self.load_messages()
+                        self.lcd.clear()
+                        self.lcd.message = self.message[self.message_idx]
+                        self.message_idx += 1
+                    time.sleep(3)
+                self.message_idx = 0
+            # CPU no 100%
+            time.sleep(self.sleep_time)
+
     def buttons(self):
         while True:
             """ Select button - on/off autoplay """
@@ -157,23 +192,6 @@ class LCD1602:
                     time.sleep(.5)
             time.sleep(self.sleep_time)
 
-    def messages(self):
-        while True:
-            if self.autoplay:
-                while self.message_idx < self.message_sum:
-                    if not self.autoplay:
-                        break
-                    with self.lock:
-                        self.msg_index(self.message_idx)
-                        self.load_messages()
-                        self.lcd.clear()
-                        self.lcd.message = self.message[self.message_idx]
-                        self.message_idx += 1
-                    time.sleep(3)
-                self.message_idx = 0
-            # CPU no 100%
-            time.sleep(self.sleep_time)
-
     def back_light_control(self):
         while True:
             if self.blight:
@@ -183,23 +201,6 @@ class LCD1602:
                     self.while_counter = 0
                     self.back_light()
             time.sleep(self.sleep_time)
-
-    def load_messages(self):
-        data = self.ncdio.read_current()
-        zabbix_data = {}
-        for i in range(0, self.ncdio.channels):
-            # Convert the data to ampere
-            current = self.ncdio.compute_current(i, data)
-            zabbix_data["F" + str(i+1)] = {
-                "ampere": "{current:.2f}".format(current=current),
-                "watt": "{watts:.2f}".format(watts=(current*self.ncdio.volts))
-            }
-            # Output data to screen
-            self.message[i] = "F{i}: {current:.2f}A\n    {watts:.2f}W".format(
-                i=i+1, current=current, watts=current*self.ncdio.volts
-            )
-        zabbix = ZabbixFile()
-        zabbix.write(zabbix_data)
 
     def run(self):
         # Create threads
