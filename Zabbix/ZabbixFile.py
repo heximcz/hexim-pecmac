@@ -15,3 +15,13 @@ class ZabbixFile:
                     pass
         except IOError:
             pass
+
+    def read(self):
+        try:
+            with open(self.file_path, 'r') as stream:
+                try:
+                    return yaml.load(stream)
+                except yaml.YAMLError:
+                    return False
+        except IOError:
+            return False

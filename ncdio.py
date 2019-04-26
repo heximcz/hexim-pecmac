@@ -1,6 +1,6 @@
 from NcdIoCurrent import NcdIo
 from LCD1602 import LCD1602
-
+from Zabbix import ZabbixRead
 
 i2c_address = 42
 volts = 230
@@ -15,7 +15,10 @@ dev = NcdIo(i2c_address, volts)
 
 lcd = LCD1602(dev)
 # lcd.run() is multithreading process, be carefully
-lcd.run()
+#lcd.run()
+
+zabbix = ZabbixRead()
+
 
 """
 for share data with zabbix, write data to the ramdisk

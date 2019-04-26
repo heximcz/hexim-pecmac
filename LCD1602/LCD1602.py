@@ -16,7 +16,7 @@ import digitalio
 import threading
 import adafruit_character_lcd.character_lcd as characterlcd
 from NcdIoCurrent import NcdIo
-from ZabbixFile import ZabbixFile
+from Zabbix import ZabbixFile
 
 class LCD1602:
 
@@ -160,12 +160,12 @@ class LCD1602:
     def messages(self):
         while True:
             if self.autoplay:
-                self.load_messages()
                 while self.message_idx < self.message_sum:
                     if not self.autoplay:
                         break
                     with self.lock:
                         self.msg_index(self.message_idx)
+                        self.load_messages()
                         self.lcd.clear()
                         self.lcd.message = self.message[self.message_idx]
                         self.message_idx += 1
@@ -186,19 +186,20 @@ class LCD1602:
 
     def load_messages(self):
         data = self.ncdio.read_current()
-        zabbix_data = {}
+        zabbix_data = {"data": []}
         for i in range(0, self.ncdio.channels):
             # Convert the data to ampere
             current = self.ncdio.compute_current(i, data)
-            zabbix_data = {
+            zabbix_data["data"].append({
                 "F" + str(i): {
-                    "current": current,
-                    "watts": current*self.ncdio.volts
+                    "ampere": "{current:.2f}".format(current=current),
+                    "watt": "{watts:.2f}".format(watts=(current*self.ncdio.volts))
                 }
-            }
+            })
             # Output data to screen
-            self.message[i] = "F{i}: {current:.2f}A\n    {watts:.2f}W" \
-                .format(i=i+1, current=current, watts=current*self.ncdio.volts)
+            self.message[i] = "F{i}: {current:.2f}A\n    {watts:.2f}W".format(
+                i=i+1, current=current, watts=current*self.ncdio.volts
+            )
         zabbix = ZabbixFile()
         zabbix.write(zabbix_data)
 
