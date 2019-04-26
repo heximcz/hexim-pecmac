@@ -70,8 +70,8 @@ class LCD1602:
         self.lcd = characterlcd.Character_LCD_Mono(self.lcd_rs, self.lcd_en, self.lcd_d4, self.lcd_d5, self.lcd_d6,
                                                    self.lcd_d7, self.lcd_columns, self.lcd_rows, self.lcd_back_light)
 
-        # Turn back_light off
-        self.lcd.back_light = self.blight
+        # Turn back_light on/off
+        self.lcd.backlight = self.blight
 
         # Select button
         self.button_select = digitalio.DigitalInOut(board.D11)
@@ -91,17 +91,17 @@ class LCD1602:
         self.lock = threading.Lock()
 
     def back_light(self):
-        """ BackLight on/off """
+        """ BackLight on/off switch """
         if self.blight:
             self.btime_counter += 1
             if self.btime_counter > self.btime:
                 self.btime_counter = 0
-                self.lcd.back_light = False
+                self.lcd.backlight = False
                 self.blight = False
             return
         if not self.blight:
             self.btime_counter = 0
-            self.lcd.back_light = True
+            self.lcd.backlight = True
             self.blight = True
         return
 
@@ -138,6 +138,7 @@ class LCD1602:
         zabbix.write(zabbix_data)
 
     def messages(self):
+        """ 1. thread: rotate messages"""
         while True:
             if self.autoplay:
                 while self.message_idx < self.message_sum:
@@ -155,6 +156,7 @@ class LCD1602:
             time.sleep(self.sleep_time)
 
     def buttons(self):
+        """ 2. thread: ceck button action """
         while True:
             """ Select button - on/off autoplay """
             if not self.button_select.value:
@@ -193,6 +195,7 @@ class LCD1602:
             time.sleep(self.sleep_time)
 
     def back_light_control(self):
+        """ 3. thread: back light driver """
         while True:
             if self.blight:
                 """check back_light expiration"""
