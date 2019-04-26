@@ -65,12 +65,12 @@ class LCD1602:
         self.lcd_d7 = digitalio.DigitalInOut(board.D22)
         self.lcd_back_light = digitalio.DigitalInOut(board.D25)
 
+        # Turn back_light off
+        self.lcd.back_light = self.blight
+
         # Init the lcd class
         self.lcd = characterlcd.Character_LCD_Mono(self.lcd_rs, self.lcd_en, self.lcd_d4, self.lcd_d5, self.lcd_d6,
                                                    self.lcd_d7, self.lcd_columns, self.lcd_rows, self.lcd_back_light)
-
-        # Turn back_light off
-        self.lcd.back_light = self.blight
 
         # Select button
         self.button_select = digitalio.DigitalInOut(board.D11)
