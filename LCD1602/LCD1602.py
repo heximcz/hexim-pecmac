@@ -182,6 +182,7 @@ class LCD1602:
                         self.back_light()
                     """ stop/start autoplay """
                     if self.autoplay:
+                        self.timestamp = time.time()
                         self.auto_play_change(False)
                     else:
                         self.auto_play_change(True)
