@@ -43,3 +43,31 @@ Enjoy!
 
 ## Source
 [Adafruit character LCD](https://learn.adafruit.com/character-lcds/python-circuitpython)
+
+## Run as service
+
+- create file "ncdio.service" in /etc/systemd/system with this content:
+```
+[Unit]
+Description=NCD.io driver
+After=syslog.target
+
+[Service]
+User=root
+Group=root
+ProtectSystem=full
+Type=simple
+WorkingDirectory=/opt/hexim-pecmac
+ExecStart=/usr/bin/python3 ncdio.py run
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+```
+- after save run command:
+```
+systemctl enable ncdio
+systemctl daemon-reload
+systemctl start ncdio
+```
