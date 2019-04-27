@@ -88,6 +88,9 @@ class LCD1602:
         self.button_down.direction = digitalio.Direction.INPUT
         self.button_down.pull = digitalio.Pull.UP
 
+        # timestamp
+        self.timestamp = time.time()
+
         self.lock = threading.Lock()
 
     def back_light(self):
@@ -103,7 +106,6 @@ class LCD1602:
             self.btime_counter = 0
             self.lcd.backlight = True
             self.blight = True
-        return
 
     def msg_index(self, idx):
         """ message index manipulate """
@@ -114,11 +116,9 @@ class LCD1602:
             self.message_idx = (self.message_sum - 1)
             return
         self.message_idx = idx
-        return
 
     def auto_play_change(self, state):
         self.autoplay = state
-        return
 
     def load_messages(self):
         data = self.ncdio.read_current()
@@ -140,6 +140,11 @@ class LCD1602:
     def messages(self):
         """ 1. thread: rotate messages"""
         while True:
+            """ check and run autoplay after 30s button inactivity """
+            if not self.autoplay:
+                if time.time() - self.timestamp > 30:
+                    self.auto_play_change(True)
+            """ autoplay messages """
             if self.autoplay:
                 while self.message_idx < self.message_sum:
                     if not self.autoplay:
@@ -155,14 +160,27 @@ class LCD1602:
             # CPU no 100%
             time.sleep(self.sleep_time)
 
+    def __show_message(self, idx):
+        self.timestamp = time.time()
+        self.auto_play_change(False)
+        if not self.blight:
+            self.back_light()
+        self.load_messages()
+        self.lcd.clear()
+        self.msg_index(self.message_idx + idx)
+        self.lcd.message = self.message[self.message_idx]
+        time.sleep(.5)
+
     def buttons(self):
-        """ 2. thread: ceck button action """
+        """ 2. thread: check button action """
         while True:
             """ Select button - on/off autoplay """
             if not self.button_select.value:
                 with self.lock:
+                    """ light on if is in off state """
                     if not self.blight:
                         self.back_light()
+                    """ stop/start autoplay """
                     if self.autoplay:
                         self.auto_play_change(False)
                     else:
@@ -171,27 +189,14 @@ class LCD1602:
 
             """ Button UP - mean next """
             if not self.button_up.value:
-                self.auto_play_change(False)
-                if not self.blight:
-                    self.back_light()
                 with self.lock:
-                    self.load_messages()
-                    self.lcd.clear()
-                    self.msg_index(self.message_idx + 1)
-                    self.lcd.message = self.message[self.message_idx]
-                    time.sleep(.5)
+                    self.__show_message(1)
 
             """ Button DOWN - mean back """
             if not self.button_down.value:
-                self.auto_play_change(False)
-                if not self.blight:
-                    self.back_light()
                 with self.lock:
-                    self.load_messages()
-                    self.lcd.clear()
-                    self.msg_index(self.message_idx - 1)
-                    self.lcd.message = self.message[self.message_idx]
-                    time.sleep(.5)
+                    self.__show_message(-1)
+
             time.sleep(self.sleep_time)
 
     def back_light_control(self):
