@@ -17,22 +17,18 @@ class NcdIo:
     :param volts: single phase voltage
     :type volts: int
     """
-    # Type of Sensor
-    board = 0
-    # Maximum Current
-    max_current = 0
-    # No. of Channels
-    channels = 0
-    # firmware revision
-    firmware = 0
-    # single phase volts
-    volts = 0
-    # i2c address
-    _address = 0
-    # lock read current
-    _lock = False
 
     def __init__(self, address, volts):
+        # Type of Sensor
+        self.board = 0
+        # Maximum Current
+        self.max_current = 0
+        # No. of Channels
+        self.channels = 0
+        # firmware revision
+        self.firmware = 0
+        # lock read current
+        self._lock = False
         # create SMBus
         self._bus = SMBus(1)
         # i2c address (int)
@@ -41,7 +37,6 @@ class NcdIo:
         self.volts = volts
         # get board parameters
         self._ident_sensors()
-        #
 
     def read_current(self):
         """ Read all current. """
