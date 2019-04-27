@@ -55,7 +55,8 @@ After=syslog.target
 [Service]
 User=root
 Group=root
-ProtectSystem=full
+ProtectSystem=strict
+ReadWritePaths=/opt/ramdisk
 Type=simple
 WorkingDirectory=/opt/hexim-pecmac
 ExecStart=/usr/bin/python3 ncdio.py run
