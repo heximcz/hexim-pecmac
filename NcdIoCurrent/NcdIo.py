@@ -27,8 +27,6 @@ class NcdIo:
         self.channels = 0
         # firmware revision
         self.firmware = 0
-        # lock read current
-        self._lock = False
         # create SMBus
         self._bus = SMBus(1)
         # i2c address (int)
