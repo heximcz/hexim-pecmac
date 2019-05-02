@@ -1,7 +1,10 @@
+import os
+import sys
 from Zabbix import ZabbixFile
 
 
 class ZabbixRead:
+    """ Read and get values from zabbix file. """
 
     def __init__(self):
         zbx = ZabbixFile()
@@ -9,17 +12,14 @@ class ZabbixRead:
         self.sensors = len(self.data)
 
     def get_current(self, phase):
-        # 'F1': {'ampere': '0.00', 'watt': '0.00'},
-        # 'F2': {'ampere': '0.00', 'watt': '0.00'},
-        # 'F3': {'ampere': '0.00', 'watt': '0.00'}}}
-        # "No. of channel is over range."
-        if phase <= self.sensors:
-            return self.data['F'+str(phase)]['ampere']
-        return "Phase number is over the range."
+        self.__check_phase(phase)
+        return self.data['F'+str(phase)]['ampere']
 
     def get_watts(self, phase):
-        # 'F1': {'ampere': '0.00', 'watt': '0.00'},
-        # 'F2': {'ampere': '0.00', 'watt': '0.00'},
-        # 'F3': {'ampere': '0.00', 'watt': '0.00'}}}
+        self.__check_phase(phase)
+        return self.data['F'+str(phase)]['watt']
+
+    def __check_phase(self, phase):
         if phase <= self.sensors:
-            return self.data['F'+str(phase)]['watt']
+            print('Phase number is over the range.')
+            sys.exit(os.EX_DATAERR)
