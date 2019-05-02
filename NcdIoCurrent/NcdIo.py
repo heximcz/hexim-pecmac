@@ -2,8 +2,6 @@
 Identify and read current from devices: https://store.ncd.io/
 Inspiration from: https://github.com/ControlEverythingCommunity/PECMAC
 """
-import os
-import sys
 import time
 from smbus2 import SMBus
 
@@ -129,14 +127,16 @@ class NcdIo:
             self._bus.write_i2c_block_data(address, register, cmd)
         except OSError as e:
             print("Write block error: %s" % e)
-            sys.exit(os.EX_OSERR)
+        except ValueError as e:
+            print("Write block error: %s" % e)
 
     def __read_block(self, address, register, length):
         try:
             return self._bus.read_i2c_block_data(address, register, length)
         except OSError as e:
             print("Write block error: %s" % e)
-            sys.exit(os.EX_OSERR)
+        except ValueError as e:
+            print("Write block error: %s" % e)
 
     @staticmethod
     def compute_current(idx, data):
