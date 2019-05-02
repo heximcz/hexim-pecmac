@@ -20,6 +20,6 @@ class ZabbixRead:
         return self.data['F'+str(phase)]['watt']
 
     def __check_phase(self, phase):
-        if phase <= self.sensors:
+        if phase > self.sensors:
             print('Phase number is over the range.')
             sys.exit(os.EX_DATAERR)
