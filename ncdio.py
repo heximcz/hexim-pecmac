@@ -2,6 +2,7 @@ import fire
 from NcdIoCurrent import NcdIo
 from LCD1602 import LCD1602
 from Zabbix import ZabbixRead
+from Exceptions import NcdIoException
 
 
 class CurrentAndWatt:
@@ -17,7 +18,11 @@ class CurrentAndWatt:
         # dev.print_calibration()
         # dev.get_one_current(0)
         # dev.get_one_watt(0)
-        lcd = LCD1602(dev)
+        try:
+            lcd = LCD1602(dev)
+        except NcdIoException as e:
+            print(e)
+            return
         # lcd.run() is multithreading process
         lcd.run()
 

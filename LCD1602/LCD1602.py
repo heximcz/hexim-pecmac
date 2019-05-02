@@ -17,6 +17,7 @@ import threading
 import adafruit_character_lcd.character_lcd as characterlcd
 from NcdIoCurrent import NcdIo
 from Zabbix import ZabbixFile
+from Exceptions import NcdIoException
 
 
 class LCD1602:
@@ -25,7 +26,7 @@ class LCD1602:
 
         # Current Values Board from NCD.io
         if not isinstance(ncdio, NcdIo):
-            raise AssertionError
+            raise NcdIoException("ncdio is not instance of NcdIo!")
         self.ncdio = ncdio
 
         # Character LCD Config
@@ -121,21 +122,25 @@ class LCD1602:
         self.autoplay = state
 
     def load_messages(self):
-        data = self.ncdio.read_current()
-        zabbix_data = {}
-        for i in range(0, self.ncdio.channels):
-            # Convert the data to ampere
-            current = self.ncdio.compute_current(i, data)
-            zabbix_data["F" + str(i+1)] = {
-                "ampere": "{current:.2f}".format(current=current),
-                "watt": "{watts:.2f}".format(watts=(current*self.ncdio.volts))
-            }
-            # Output data to screen
-            self.message[i] = "F{i}: {current:.2f}A\n    {watts:.2f}W".format(
-                i=i+1, current=current, watts=current*self.ncdio.volts
-            )
-        zabbix = ZabbixFile()
-        zabbix.write(zabbix_data)
+        """ load messages for display """
+        try:
+            data = self.ncdio.read_current()
+            zabbix_data = {}
+            for i in range(0, self.ncdio.channels):
+                # Convert the data to ampere
+                current = self.ncdio.compute_current(i, data)
+                zabbix_data["F" + str(i+1)] = {
+                    "ampere": "{current:.2f}".format(current=current),
+                    "watt": "{watts:.2f}".format(watts=(current*self.ncdio.volts))
+                }
+                # Output data to screen
+                self.message[i] = "F{i}: {current:.2f}A\n    {watts:.2f}W".format(
+                    i=i+1, current=current, watts=current*self.ncdio.volts
+                )
+            zabbix = ZabbixFile()
+            zabbix.write(zabbix_data)
+        except NcdIoException:
+            return
 
     def messages(self):
         """ 1. thread: rotate messages"""

@@ -1,0 +1,2 @@
+class NcdIoException(Exception):
+    pass
