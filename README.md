@@ -16,7 +16,7 @@ pip3 install smbus2
 ```
 
 ## Prerequisites
-Since the data from i2c cannot be read in parallel, the data for periodically reading the called agent zabbix are stored in the file. For these purposes, and with a large number of writes, it is better to use a RAM file.
+Since the data from i2c cannot be read in parallel, the data for periodically reading of a zabbix agent are stored in the file. For these purposes, and with a large number of writes, it is better to use a RAM file.
 
 - create folder for ram disk where is stored zabbix data file:
 ```
