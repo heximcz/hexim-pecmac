@@ -16,6 +16,7 @@ pip3 install smbus2
 ```
 
 ## Prerequisites
+Since the data from i2c cannot be read in parallel, the data for periodically reading the called agent zabbix are stored in the file. For these purposes, and with a large number of writes, it is better to use a RAM file.
 
 - create folder for ram disk where is stored zabbix data file:
 ```
@@ -72,3 +73,9 @@ systemctl enable ncdio
 systemctl daemon-reload
 systemctl start ncdio
 ```
+
+## Known issues
+
+When you use the program only as a background service, I don't know of any problems. However, when you use the background service and command line simultaneously the text output of those commands may be incomplete or return the text of the exceptions invoked.
+
+## License MIT
